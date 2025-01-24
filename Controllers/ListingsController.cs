@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using RealEstateListingApi.Data;
 using RealEstateListingApi.Models;
 using RealEstateListingApi.Services;
 
@@ -9,7 +8,6 @@ namespace RealEstateListingApi.Controllers
     [Route("api/[controller]")]
     public class ListingsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
         private readonly IListingService _service;
 
         public ListingsController(IListingService service)
@@ -20,26 +18,27 @@ namespace RealEstateListingApi.Controllers
         // Tag this operation as "Listings Retrieval"
         [HttpGet]
         [Tags("Listings Retrieval")]
-        public ActionResult<IEnumerable<Listing>> GetAll()
+        public async Task<ActionResult<IEnumerable<Listing>>> GetAll()
         {
-            return _service.GetAll().ToList();
+            var result = await _service.GetAll();
+            return Ok(result);
         }
 
         // Tag this operation as "Listings Management"
         [HttpPost]
         [Tags("Listings Management")]
-        public ActionResult<Listing> AddListing([FromBody] Listing listing)
+        public async Task<ActionResult<Listing>> AddListing([FromBody] Listing listing)
         {
-            _service.Create(listing);
+            var result = await _service.Create(listing);
             return CreatedAtAction(nameof(GetById), new { id = listing.Id }, listing);
         }
 
         // Tag this operation as "Listings Retrieval"
         [HttpGet("{id}")]
         [Tags("Listings Retrieval")]
-        public ActionResult<Listing> GetById(string id)
+        public async Task<ActionResult<Listing>> GetById(string id)
         {
-            var result = _service.GetById(id);
+            var result = await _service.GetById(id);
 
             if (result == null)
                 return NotFound();
@@ -50,9 +49,9 @@ namespace RealEstateListingApi.Controllers
         // Tag this operation as "Deleting Listing"
         [HttpDelete("{id}")]
         [Tags("Deleting Listing")]
-        public ActionResult DeleteById(string id)
+        public async Task<ActionResult> DeleteById(string id)
         {
-            var result = _service.Delete(id);
+            var result = await _service.Delete(id);
             return result ? Ok() : NotFound();
         }
     }

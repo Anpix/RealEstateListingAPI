@@ -1,37 +1,35 @@
-﻿using RealEstateListingApi.Data;
-using RealEstateListingApi.Models;
+﻿using RealEstateListingApi.Models;
+using RealEstateListingApi.Repositories;
 
 namespace RealEstateListingApi.Services;
 
 public class ListingService : IListingService
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IListingRepository _repository;
 
-    public ListingService(ApplicationDbContext context)
+    public ListingService(IListingRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
 
-    public IEnumerable<Listing> GetAll()
+    public async Task<IEnumerable<Listing>> GetAll()
     {
-        return _context.Listings.ToList();
+        return await _repository.GetAll();
     }
 
-    public Listing? GetById(string id)
+    public async Task<Listing?> GetById(string id)
     {
-        return _context.Listings.FirstOrDefault(l => l.Id == id);
+        return await _repository.GetById(id);
     }
 
-    public Listing Create(Listing listing)
+    public async Task<Listing?> Create(Listing listing)
     {
-        _context.Listings.Add(listing);
-        _context.SaveChanges();
-        return listing;
+        return await _repository.Create(listing);
     }
 
-    public Listing? Update(string id, Listing listing)
+    public async Task<Listing?> Update(Listing listing)
     {
-        var existingListing = _context.Listings.FirstOrDefault(l => l.Id == id);
+        var existingListing = await _repository.GetById(listing.Id);
         if (existingListing == null)
             return null;
 
@@ -39,19 +37,14 @@ public class ListingService : IListingService
         existingListing.Price = listing.Price;
         existingListing.Description = listing.Description;
 
-        _context.SaveChanges();
+        var result = await _repository.SaveChanges();
 
         return existingListing;
     }
 
-    public bool Delete(string id)
+    public async Task<bool> Delete(string id)
     {
-        var listing = _context.Listings.FirstOrDefault(l => l.Id == id);
-        if (listing == null)
-            return false;
-
-        _context.Listings.Remove(listing);
-        _context.SaveChanges();
+        await _repository.Delete(id);
         return true;
     }
 

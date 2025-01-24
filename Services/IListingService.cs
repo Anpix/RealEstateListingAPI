@@ -4,10 +4,10 @@ namespace RealEstateListingApi.Services
 {
     public interface IListingService
     {
-        Listing Create(Listing listing);
-        bool Delete(string id);
-        IEnumerable<Listing> GetAll();
-        Listing? GetById(string id);
-        Listing? Update(string id, Listing listing);
+        Task<IEnumerable<Listing>> GetAll();
+        Task<Listing?> GetById(string id);
+        Task<Listing?> Create(Listing listing);
+        Task<Listing?> Update(Listing listing);
+        Task<bool> Delete(string id);
     }
 }

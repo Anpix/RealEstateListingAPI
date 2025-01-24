@@ -3,12 +3,14 @@ using RealEstateListingApi.Data;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using RealEstateListingApi.Services;
+using RealEstateListingApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddScoped<IListingService, ListingService>();
+builder.Services.AddScoped<IListingRepository, ListingRepository>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("RealEstateListings"));
 builder.Services.AddEndpointsApiExplorer();
