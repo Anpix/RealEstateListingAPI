@@ -46,5 +46,14 @@ namespace RealEstateListingApi.Controllers
 
             return result;
         }
+
+        // Tag this operation as "Deleting Listing"
+        [HttpDelete("{id}")]
+        [Tags("Deleting Listing")]
+        public ActionResult DeleteById(string id)
+        {
+            var result = _service.Delete(id);
+            return result ? Ok() : NotFound();
+        }
     }
 }
