@@ -18,7 +18,7 @@ public class ListingRepository : IListingRepository
         return await _context.Listings.ToListAsync();
     }
 
-    public async Task<Listing?> GetById(string id)
+    public async Task<Listing?> GetById(Guid id)
     {
         return await _context.Listings.FirstOrDefaultAsync(l => l.Id == id);
     }
@@ -44,7 +44,7 @@ public class ListingRepository : IListingRepository
         return existingListing;
     }
 
-    public async Task<bool> Delete(string id)
+    public async Task<bool> Delete(Guid id)
     {
         var listing = _context.Listings.FirstOrDefault(l => l.Id == id);
         if (listing == null)

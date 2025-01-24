@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using RealEstateListingApi.Models;
+using RealEstateListingApi.DTOs;
 using RealEstateListingApi.Services;
 
 namespace RealEstateListingApi.Controllers
@@ -18,7 +18,7 @@ namespace RealEstateListingApi.Controllers
         // Tag this operation as "Listings Retrieval"
         [HttpGet]
         [Tags("Listings Retrieval")]
-        public async Task<ActionResult<IEnumerable<Listing>>> GetAll()
+        public async Task<ActionResult<IEnumerable<ListingDto>>> GetAll()
         {
             var result = await _service.GetAll();
             return Ok(result);
@@ -27,23 +27,30 @@ namespace RealEstateListingApi.Controllers
         // Tag this operation as "Listings Management"
         [HttpPost]
         [Tags("Listings Management")]
-        public async Task<ActionResult<Listing>> AddListing([FromBody] Listing listing)
+        public async Task<ActionResult<ListingDto>> AddListing([FromBody] CreateListingDto dto)
         {
-            var result = await _service.Create(listing);
-            return CreatedAtAction(nameof(GetById), new { id = listing.Id }, listing);
+            var result = await _service.Create(dto);
+            if(result == null)
+                return BadRequest();
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         // Tag this operation as "Listings Retrieval"
         [HttpGet("{id}")]
         [Tags("Listings Retrieval")]
-        public async Task<ActionResult<Listing>> GetById(string id)
+        public async Task<ActionResult<ListingDto>> GetById(string id)
         {
-            var result = await _service.GetById(id);
+            var guid = Guid.Empty;
+            if (!Guid.TryParse(id, out guid))
+                return BadRequest();
+
+            var result = await _service.GetById(guid);
 
             if (result == null)
                 return NotFound();
 
-            return result;
+            return Ok(result);
         }
 
         // Tag this operation as "Deleting Listing"
@@ -51,7 +58,11 @@ namespace RealEstateListingApi.Controllers
         [Tags("Deleting Listing")]
         public async Task<ActionResult> DeleteById(string id)
         {
-            var result = await _service.Delete(id);
+            var guid = Guid.Empty;
+            if(!Guid.TryParse(id, out guid))
+                return BadRequest();
+
+            var result = await _service.Delete(guid);
             return result ? Ok() : NotFound();
         }
     }

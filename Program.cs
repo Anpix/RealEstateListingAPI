@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddScoped<IListingService, ListingService>();
 builder.Services.AddScoped<IListingRepository, ListingRepository>();
+builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("RealEstateListings"));
 builder.Services.AddEndpointsApiExplorer();
