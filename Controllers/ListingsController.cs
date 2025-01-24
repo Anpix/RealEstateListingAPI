@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using RealEstateListingApi.Data;
-using RealEstateListingApi.Models;
-using System.Collections.Generic;
-using System.Linq;
+using RealEstateListingApi.DTOs;
+using RealEstateListingApi.Services;
 
 namespace RealEstateListingApi.Controllers
 {
@@ -10,42 +8,62 @@ namespace RealEstateListingApi.Controllers
     [Route("api/[controller]")]
     public class ListingsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IListingService _service;
 
-        public ListingsController(ApplicationDbContext context)
+        public ListingsController(IListingService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // Tag this operation as "Listings Retrieval"
         [HttpGet]
         [Tags("Listings Retrieval")]
-        public ActionResult<IEnumerable<Listing>> GetAllListings()
+        public async Task<ActionResult<IEnumerable<ListingDto>>> GetAll()
         {
-            return _context.Listings.ToList();
+            var result = await _service.GetAll();
+            return Ok(result);
         }
 
         // Tag this operation as "Listings Management"
         [HttpPost]
         [Tags("Listings Management")]
-        public ActionResult<Listing> AddListing([FromBody] Listing listing)
+        public async Task<ActionResult<ListingDto>> AddListing([FromBody] CreateListingDto dto)
         {
-            _context.Listings.Add(listing);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetListingById), new { id = listing.Id }, listing);
+            var result = await _service.Create(dto);
+            if(result == null)
+                return BadRequest();
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         // Tag this operation as "Listings Retrieval"
         [HttpGet("{id}")]
         [Tags("Listings Retrieval")]
-        public ActionResult<Listing> GetListingById(string id)
+        public async Task<ActionResult<ListingDto>> GetById(string id)
         {
-            var listing = _context.Listings.FirstOrDefault(l => l.Id == id);
-            if (listing == null)
-            {
+            var guid = Guid.Empty;
+            if (!Guid.TryParse(id, out guid))
+                return BadRequest();
+
+            var result = await _service.GetById(guid);
+
+            if (result == null)
                 return NotFound();
-            }
-            return listing;
+
+            return Ok(result);
+        }
+
+        // Tag this operation as "Deleting Listing"
+        [HttpDelete("{id}")]
+        [Tags("Deleting Listing")]
+        public async Task<ActionResult> DeleteById(string id)
+        {
+            var guid = Guid.Empty;
+            if(!Guid.TryParse(id, out guid))
+                return BadRequest();
+
+            var result = await _service.Delete(guid);
+            return result ? Ok() : NotFound();
         }
     }
 }
