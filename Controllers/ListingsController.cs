@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RealEstateListingApi.Data;
 using RealEstateListingApi.Models;
-using System.Collections.Generic;
-using System.Linq;
+using RealEstateListingApi.Services;
 
 namespace RealEstateListingApi.Controllers
 {
@@ -11,18 +10,19 @@ namespace RealEstateListingApi.Controllers
     public class ListingsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IListingService _service;
 
-        public ListingsController(ApplicationDbContext context)
+        public ListingsController(IListingService service)
         {
-            _context = context;
+            _service = service;
         }
 
         // Tag this operation as "Listings Retrieval"
         [HttpGet]
         [Tags("Listings Retrieval")]
-        public ActionResult<IEnumerable<Listing>> GetAllListings()
+        public ActionResult<IEnumerable<Listing>> GetAll()
         {
-            return _context.Listings.ToList();
+            return _service.GetAll().ToList();
         }
 
         // Tag this operation as "Listings Management"
@@ -30,22 +30,21 @@ namespace RealEstateListingApi.Controllers
         [Tags("Listings Management")]
         public ActionResult<Listing> AddListing([FromBody] Listing listing)
         {
-            _context.Listings.Add(listing);
-            _context.SaveChanges();
-            return CreatedAtAction(nameof(GetListingById), new { id = listing.Id }, listing);
+            _service.Create(listing);
+            return CreatedAtAction(nameof(GetById), new { id = listing.Id }, listing);
         }
 
         // Tag this operation as "Listings Retrieval"
         [HttpGet("{id}")]
         [Tags("Listings Retrieval")]
-        public ActionResult<Listing> GetListingById(string id)
+        public ActionResult<Listing> GetById(string id)
         {
-            var listing = _context.Listings.FirstOrDefault(l => l.Id == id);
-            if (listing == null)
-            {
+            var result = _service.GetById(id);
+
+            if (result == null)
                 return NotFound();
-            }
-            return listing;
+
+            return result;
         }
     }
 }
