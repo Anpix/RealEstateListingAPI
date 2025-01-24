@@ -7,24 +7,24 @@ namespace RealEstateListingApi.Services;
 
 public class ListingService : IListingService
 {
-    private readonly IListingRepository _repository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ListingService(IListingRepository repository, IMapper mapper)
+    public ListingService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _mapper = mapper;
-        _repository = repository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<ListingDto>> GetAll()
     {
-        var result = await _repository.GetAll();
+        var result = await _unitOfWork.ListingRepository.GetAll();
         return _mapper.Map<IEnumerable<ListingDto>>(result);
     }
 
     public async Task<ListingDto?> GetById(Guid id)
     {
-        var result = await _repository.GetById(id);
+        var result = await _unitOfWork.ListingRepository.GetById(id);
         return _mapper.Map<ListingDto>(result);
     }
 
@@ -37,14 +37,14 @@ public class ListingService : IListingService
             Price = createDto.Price,
             Description = createDto.Description
         };
-        var result = await _repository.Create(listing);
+        var result = await _unitOfWork.ListingRepository.Create(listing);
         var dto = _mapper.Map<ListingDto>(result);
         return dto;
     }
 
     public async Task<bool> Delete(Guid id)
     {
-        await _repository.Delete(id);
+        await _unitOfWork.ListingRepository.Delete(id);
         return true;
     }
 
